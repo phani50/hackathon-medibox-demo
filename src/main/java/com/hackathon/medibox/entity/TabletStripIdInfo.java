@@ -3,14 +3,10 @@ package com.hackathon.medibox.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -22,14 +18,20 @@ public class TabletStripIdInfo {
     @Column(name = "UUID", updatable = false, nullable = false)
     private UUID uuid;
 
+    @Column(name = "STRIP_ID")
+    private String stripId;
+
     @Column(name = "TABLET_NAME")
     private String tabletName;
 
     @Column(name = "QUANTITY")
     private int quantity;
 
-    @Column(name = "WEIGHT")
-    private int weight;
+    @Column(name = "INITIAL_WEIGHT")
+    private float initialWeight;
+
+    @Column(name = "CURRENT_WEIGHT")
+    private float currentWeight;
 
     @Column(name = "DATE_OF_MANUFACTURE")
     private Instant dateOfManufacture;
@@ -37,30 +39,28 @@ public class TabletStripIdInfo {
     @Column(name = "DATE_OF_EXPIRY")
     private Instant dateOfExpiry;
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-    @JoinColumn(name = "TABLET_STRIP_ID_UUID")
-    private TabletStripId tabletStripId;
-
     public TabletStripIdInfo() {
         super();
     }
 
-    public static TabletStripIdInfo create(String tabletName, int quantity, int weight, Instant dateOfManufacture,
-            Instant dateOfExpiry, TabletStripId tabletStripId) {
+    public static TabletStripIdInfo create(String stripId, String tabletName, int quantity, float initialWeight,
+            float currentWeight, Instant dateOfManufacture, Instant dateOfExpiry) {
         UUID uuid = UUID.randomUUID();
-        return new TabletStripIdInfo(uuid, tabletName, quantity, weight, dateOfManufacture, dateOfExpiry, tabletStripId);
+        return new TabletStripIdInfo(uuid, stripId, tabletName, quantity, initialWeight, currentWeight, dateOfManufacture,
+                dateOfExpiry);
     }
 
-    private TabletStripIdInfo(UUID uuid, String tabletName, int quantity, int weight, Instant dateOfManufacture,
-            Instant dateOfExpiry, TabletStripId tabletStripId) {
+    private TabletStripIdInfo(UUID uuid, String stripId, String tabletName, int quantity, float initialWeight,
+            float currentWeight, Instant dateOfManufacture, Instant dateOfExpiry) {
         super();
         this.uuid = uuid;
+        this.stripId = stripId;
         this.tabletName = tabletName;
         this.quantity = quantity;
-        this.weight = weight;
+        this.initialWeight = initialWeight;
+        this.currentWeight = currentWeight;
         this.dateOfManufacture = dateOfManufacture;
         this.dateOfExpiry = dateOfExpiry;
-        this.tabletStripId = tabletStripId;
     }
 
     public UUID getUuid() {
@@ -87,14 +87,6 @@ public class TabletStripIdInfo {
         this.quantity = quantity;
     }
 
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
-
     public Instant getDateOfManufacture() {
         return dateOfManufacture;
     }
@@ -111,12 +103,28 @@ public class TabletStripIdInfo {
         this.dateOfExpiry = dateOfExpiry;
     }
 
-    public TabletStripId getTabletStripId() {
-        return tabletStripId;
+    public String getStripId() {
+        return stripId;
     }
 
-    public void setTabletStripId(TabletStripId tabletStripId) {
-        this.tabletStripId = tabletStripId;
+    public void setStripId(String stripId) {
+        this.stripId = stripId;
+    }
+
+    public float getInitialWeight() {
+        return initialWeight;
+    }
+
+    public void setInitialWeight(float initialWeight) {
+        this.initialWeight = initialWeight;
+    }
+
+    public float getCurrentWeight() {
+        return currentWeight;
+    }
+
+    public void setCurrentWeight(float currentWeight) {
+        this.currentWeight = currentWeight;
     }
 
 }

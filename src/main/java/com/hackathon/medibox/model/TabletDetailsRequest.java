@@ -9,7 +9,7 @@ public class TabletDetailsRequest {
     @ApiModelProperty(value = "No of tablets inside strip", example = "10", position = 1)
     private int quantity;
     @ApiModelProperty(value = "tablet strip weight(in grams)", example = "20", position = 2)
-    private int weight;
+    private float weight;
     @ApiModelProperty(value = "Tablet manufacture date(yyyy-MM-dd'T'HH:mm:ss[.SSS]'Z')", example = "2022-05-20T07:06:52.881Z", position = 4)
     private String dateOfManufacture;
     @ApiModelProperty(value = "Tablet expiry date(yyyy-MM-dd'T'HH:mm:ss[.SSS]'Z')", example = "2023-09-20T07:06:52.881Z", position = 5)
@@ -35,11 +35,11 @@ public class TabletDetailsRequest {
         this.quantity = quantity;
     }
 
-    public int getWeight() {
+    public float getWeight() {
         return weight;
     }
 
-    public void setWeight(int weight) {
+    public void setWeight(float weight) {
         this.weight = weight;
     }
 

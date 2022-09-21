@@ -15,10 +15,8 @@ import org.springframework.data.util.Streamable;
 import org.springframework.stereotype.Service;
 
 import com.hackathon.medibox.dao.TabletStripIdInfoRepository;
-import com.hackathon.medibox.dao.TabletStripIdRepository;
-import com.hackathon.medibox.entity.TabletStripId;
 import com.hackathon.medibox.entity.TabletStripIdInfo;
-import com.hackathon.medibox.model.TableDetails;
+import com.hackathon.medibox.model.StripDetails;
 import com.hackathon.medibox.model.TableInfoResponse;
 import com.hackathon.medibox.model.TabletDetailsRequest;
 import com.hackathon.medibox.model.TabletInfoRequest;
@@ -28,32 +26,29 @@ public class MediBoxService {
 
     private final Logger LOGGER = LoggerFactory.getLogger(MediBoxService.class);
 
-    private final TabletStripIdRepository tabletStripIdRepository;
     private final TabletStripIdInfoRepository tabletStripIdInfoRepository;
 
     @Autowired
-    public MediBoxService(TabletStripIdRepository tabletStripIdRepository,
-            TabletStripIdInfoRepository tabletStripIdInfoRepository) {
+    public MediBoxService(TabletStripIdInfoRepository tabletStripIdInfoRepository) {
         super();
-        this.tabletStripIdRepository = tabletStripIdRepository;
         this.tabletStripIdInfoRepository = tabletStripIdInfoRepository;
     }
 
     @Transactional
     public void saveTabletIndo(TabletInfoRequest tabletInfoRequest) {
         LOGGER.info("Request reached to saveTabletIndo method in service class");
-        TabletStripId tabletStripId = null;
-        Optional<TabletStripId> optTabletStrip = tabletStripIdRepository.findByStripId(tabletInfoRequest.getId());
-        if (optTabletStrip.isPresent()) {
-            tabletStripId = optTabletStrip.get();
-        } else {
-            tabletStripId = TabletStripId.create(tabletInfoRequest.getId());
-            tabletStripId = tabletStripIdRepository.save(tabletStripId);
-        }
+        String stripId = tabletInfoRequest.getId();
         TabletDetailsRequest details = tabletInfoRequest.getTabletDetailsRequest();
-        TabletStripIdInfo tabletStripIdInfo = TabletStripIdInfo.create(details.getTabletName(), details.getQuantity(),
-                details.getWeight(), Instant.parse(details.getDateOfManufacture()), Instant.parse(details.getDateOfExpiry()),
-                tabletStripId);
+        TabletStripIdInfo tabletStripIdInfo = null;
+        Optional<TabletStripIdInfo> optTabletStripIdInfo = tabletStripIdInfoRepository.findByStripId(stripId);
+        if (optTabletStripIdInfo.isPresent()) {
+            tabletStripIdInfo = optTabletStripIdInfo.get();
+            tabletStripIdInfo.setCurrentWeight(details.getWeight());
+        } else {
+            tabletStripIdInfo = TabletStripIdInfo.create(stripId, details.getTabletName(), details.getQuantity(),
+                    details.getWeight(), details.getWeight(), Instant.parse(details.getDateOfManufacture()),
+                    Instant.parse(details.getDateOfExpiry()));
+        }
         tabletStripIdInfoRepository.save(tabletStripIdInfo);
         LOGGER.info("Request finished saveTabletIndo method in service class");
     }
@@ -61,63 +56,50 @@ public class MediBoxService {
     public List<TableInfoResponse> findAllTabletInfos() {
         LOGGER.info("Request reached to findAllTabletInfos method in service class");
         List<TableInfoResponse> tableDetailsResponses = new ArrayList<>();
-        List<TabletStripId> tabletStripIds = Streamable.of(tabletStripIdRepository.findAll()).toList();
-        for (TabletStripId tabletStripId : tabletStripIds) {
+        List<TabletStripIdInfo> tabletStripIdInfos = Streamable.of(tabletStripIdInfoRepository.findAll()).toList();
+        for (TabletStripIdInfo tabletStripIdInfo : tabletStripIdInfos) {
             TableInfoResponse tableDetailsResponse = new TableInfoResponse();
-            TableDetails tableDetails = new TableDetails();
-            tableDetailsResponse.setId(tabletStripId.getStripId());
-            Optional<TabletStripIdInfo> optTabletStripIdInfo = tabletStripId.getTabletStripIdInfos().stream().findFirst();
-            if (optTabletStripIdInfo.isPresent()) {
-                TabletStripIdInfo tabletStripIdInfo = optTabletStripIdInfo.get();
-
-                // set to pojo class
-                tableDetails.setDateOfExpiry(tabletStripIdInfo.getDateOfExpiry().toString());
-                tableDetails.setDateOfManufacture(tabletStripIdInfo.getDateOfManufacture().toString());
-                tableDetails.setQuantity(tabletStripIdInfo.getQuantity());
-                tableDetails.setTabletName(tabletStripIdInfo.getTabletName());
-                tableDetails.setWeight(tabletStripIdInfo.getWeight());
-                tableDetails
-                        .setDaysLeft(Math.abs(Duration.between(tabletStripIdInfo.getDateOfExpiry(), Instant.now()).toDays()));
-            }
-            tableDetailsResponse.setDetails(tableDetails);
+            tableDetailsResponse.setId(tabletStripIdInfo.getStripId());
+            StripDetails stripDetails = toStripDetails(tabletStripIdInfo);
+            tableDetailsResponse.setDetails(stripDetails);
             tableDetailsResponses.add(tableDetailsResponse);
         }
         return tableDetailsResponses;
     }
 
+    private StripDetails toStripDetails(TabletStripIdInfo tabletStripIdInfo) {
+        StripDetails stripDetails = new StripDetails();
+        // set to pojo class
+        stripDetails.setDateOfExpiry(tabletStripIdInfo.getDateOfExpiry().toString());
+        stripDetails.setDateOfManufacture(tabletStripIdInfo.getDateOfManufacture().toString());
+        stripDetails.setQuantity(tabletStripIdInfo.getQuantity());
+        stripDetails.setTabletName(tabletStripIdInfo.getTabletName());
+        stripDetails.setInitialWeight(tabletStripIdInfo.getInitialWeight());
+        stripDetails.setCurrentWeight(tabletStripIdInfo.getCurrentWeight());
+        stripDetails
+                .setDaysLeft(Math.abs(Duration.between(tabletStripIdInfo.getDateOfExpiry(), Instant.now()).toDays()));
+        return stripDetails;
+    }
+
     public TableInfoResponse findTabletInfoByStripId(String stripId) {
         LOGGER.info("Request reached to findTabletInfoByStripId method in service class");
         TableInfoResponse tableDetailsResponse = new TableInfoResponse();
-        TableDetails tableDetails = new TableDetails();
-        Optional<TabletStripId> optTabletStrip = tabletStripIdRepository.findByStripId(stripId);
-        if (optTabletStrip.isPresent()) {
-            TabletStripId tabletStripId = optTabletStrip.get();
-            tableDetailsResponse.setId(tabletStripId.getStripId());
-            Optional<TabletStripIdInfo> optTabletStripIdInfo = tabletStripId.getTabletStripIdInfos().stream().findFirst();
-            if (optTabletStripIdInfo.isPresent()) {
-                TabletStripIdInfo tabletStripIdInfo = optTabletStripIdInfo.get();
-
-                // set to pojo class
-                tableDetails.setDateOfExpiry(tabletStripIdInfo.getDateOfExpiry().toString());
-                tableDetails.setDateOfManufacture(tabletStripIdInfo.getDateOfManufacture().toString());
-                tableDetails.setQuantity(tabletStripIdInfo.getQuantity());
-                tableDetails.setTabletName(tabletStripIdInfo.getTabletName());
-                tableDetails.setWeight(tabletStripIdInfo.getWeight());
-                tableDetails
-                        .setDaysLeft(Math.abs(Duration.between(tabletStripIdInfo.getDateOfExpiry(), Instant.now()).toDays()));
-            }
-            tableDetailsResponse.setDetails(tableDetails);
+        Optional<TabletStripIdInfo> optTabletStripIdInfo = tabletStripIdInfoRepository.findByStripId(stripId);
+        if (optTabletStripIdInfo.isPresent()) {
+            TabletStripIdInfo tabletStripIdInfo = optTabletStripIdInfo.get();
+            tableDetailsResponse.setId(tabletStripIdInfo.getStripId());
+            StripDetails stripDetails = toStripDetails(tabletStripIdInfo);
+            tableDetailsResponse.setDetails(stripDetails);
         }
         return tableDetailsResponse;
     }
 
-    @Transactional
     public void deleteTabletInfo(String stripId) {
         LOGGER.info("Request reached to deleteTabletInfo method in service class");
         if (stripId != null) {
-            tabletStripIdRepository.deleteByStripId(stripId);
+            tabletStripIdInfoRepository.deleteByStripId(stripId);
         } else {
-            tabletStripIdRepository.deleteAll();
+            tabletStripIdInfoRepository.deleteAll();
         }
     }
 

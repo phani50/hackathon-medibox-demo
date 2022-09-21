@@ -1,9 +1,10 @@
 package com.hackathon.medibox.model;
 
-public class TableDetails {
+public class StripDetails {
     private String tabletName;
     private int quantity;
-    private int weight;
+    private float initialWeight;
+    private float currentWeight;
     private String dateOfManufacture;
     private String dateOfExpiry;
     private long daysLeft;
@@ -24,12 +25,20 @@ public class TableDetails {
         this.quantity = quantity;
     }
 
-    public int getWeight() {
-        return weight;
+    public float getInitialWeight() {
+        return initialWeight;
     }
 
-    public void setWeight(int weight) {
-        this.weight = weight;
+    public void setInitialWeight(float initialWeight) {
+        this.initialWeight = initialWeight;
+    }
+
+    public float getCurrentWeight() {
+        return currentWeight;
+    }
+
+    public void setCurrentWeight(float currentWeight) {
+        this.currentWeight = currentWeight;
     }
 
     public String getDateOfManufacture() {

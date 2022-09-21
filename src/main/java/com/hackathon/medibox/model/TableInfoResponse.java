@@ -3,7 +3,7 @@ package com.hackathon.medibox.model;
 public class TableInfoResponse {
 
     private String id;
-    private TableDetails details;
+    private StripDetails details;
 
     public String getId() {
         return id;
@@ -13,11 +13,11 @@ public class TableInfoResponse {
         this.id = id;
     }
 
-    public TableDetails getDetails() {
+    public StripDetails getDetails() {
         return details;
     }
 
-    public void setDetails(TableDetails details) {
+    public void setDetails(StripDetails details) {
         this.details = details;
     }
 
