@@ -94,6 +94,7 @@ public class MediBoxService {
         return tableDetailsResponse;
     }
 
+    @Transactional
     public void deleteTabletInfo(String stripId) {
         LOGGER.info("Request reached to deleteTabletInfo method in service class");
         if (stripId != null) {
