@@ -17,7 +17,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class SwaggerConfig2 {
 
     public static final String MEDIBOX_TAG = "Medibox Apis";
-    public static final String NOTIFICATION_TAG = "Push Notifications";
     public static final String EMAIL_TAG = "Send Email Notifications";
 
     @Bean
@@ -31,6 +30,6 @@ public class SwaggerConfig2 {
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
                 .paths(PathSelectors.any()).build()
-                .tags(new Tag(MEDIBOX_TAG, ""), new Tag(NOTIFICATION_TAG, ""), new Tag(EMAIL_TAG, ""));
+                .tags(new Tag(MEDIBOX_TAG, ""), new Tag(EMAIL_TAG, ""));
     }
 }

@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.ses.model.SesException;
 @RequestMapping("/emails")
 public class SendEmailController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(TestPushNotification.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SendEmailController.class);
 
     private static final String ERROR_MSG_PREFIX = "The message could not be sent due to: ";
 
